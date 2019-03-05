@@ -5,31 +5,69 @@
 
 		<div class="global-page-container">
 
-			<div class="product-section">
-				<div class="product-info small-12 large-5 columns no-padding">
-					<h3>Camarão ao Alho</h3>
-					<h4>Entradas</h4>
-					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sodales
-						justo eu mauris tincidunt, id dignissim magna elementum. Sed euismod
-						efficitur tortor eu facilisis. Proin augue nunc, luctus hendrerit velit
-						sit amet, iaculis porta velit. In vulputate tristique urna. Praesent
-						tempus ipsum augue, sit amet tristique lacus semper cursus.
-					</p>
+		<?php 
+			$mealCode = $_GET['prato'];
+			
+			$server = 'localhost';
+			$user = 'root';
+			$password = '';
+			$db_name = 'restaurante';
+			$port = '3306';
 
-					<h5><b>Preço: </b>R$ 14</h5>
-					<h5><b>Calorias: </b>310</h5>
+			$db_connect = new mysqli($server,$user,$password,$db_name,$port);
+			// O comando abaixo insere os dados com acentos corretos.
+			mysqli_set_charset($db_connect,"utf8");
+
+			if ($db_connect->connect_error) {
+				echo 'Falha: ' . $db_connect->connect_error;
+			} else {
+				// echo 'Conexão feita com sucesso' . '<br><br>';
+				
+				$sql = "SELECT * FROM pratos WHERE codigo = '$mealCode'";
+				// Guarda o resultado advindo do banco
+				$result = $db_connect->query($sql);
+				// Se houver resultados advindos do banco
+				if ($result->num_rows > 0) {
+					while($row = $result->fetch_assoc()) {
+						$mealName = $row['nome'];
+						$mealCategory = $row['categoria'];
+						$mealDescription = $row['descricao'];
+						$mealPrice = $row['preco'];
+						$mealCalories = $row['calorias'];
+					}
+
+				} else {
+					echo 'Não há informações do prato.';
+				}
+			}
+				
+		?>
+
+			<!-- Valida se há informações do prato para serem exibidas -->
+			<?php if ($mealName != NULL && $mealCode != NULL) { ?>
+				<div class="product-section">
+					<div class="product-info small-12 large-5 columns no-padding">
+						<h3><?php echo $mealName; ?></h3>
+						<h4><?php echo $mealCategory; ?></h4>
+						<p><?php echo $mealDescription; ?></p>
+
+						<h5><b>Preço: </b>R$ <?php echo $mealPrice; ?></h5>
+						<h5><b>Calorias: </b><?php echo $mealCalories; ?></h5>
+					</div>
+					<div class="product-picture small-12 large-7 columns no-padding">
+						<img src="img/cardapio/<?php echo $mealCode; ?>.jpg" alt="<?php echo $mealCode; ?>">
+					</div>
 				</div>
-
-				<div class="product-picture small-12 large-7 columns no-padding">
-					<img src="img/cardapio/camarao-alho.jpg" alt="camarao">
-				</div>
-
-			</div>
+			<?php } else {
+				echo 'Prato não encontrado!' . '<br>';
+			}?>
 
 			<div class="go-back small-12 columns no-padding">
-				<a href="cardapio.html">
-					<< Voltar ao Cardápio</a> </div> </div> </div> <footer id="footer" class="small-12 columns no-padding">
-
+				<a href="cardapio.php">
+					<< Voltar ao Cardápio</a> 
+				</div> 
+			</div> 
+		</div> 
         <?php include 'footer.php'; ?>
 </body>
 
