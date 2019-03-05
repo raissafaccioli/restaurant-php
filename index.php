@@ -139,34 +139,136 @@
 
 
 			<div class="reservation-form small-12 columns no-padding">
-
-				<form>
+				<form action="index.php#contact-us" method="post">
 
 					<div class="form-part1 small-12 large-8 xlarge-7 columns no-padding">
-
-						<input type="text" name="nome" class="field" placeholder="Nome completo" />
-
-						<input type="text" name="email" class="field" placeholder="E-mail" />
-
+						<input type="text" name="nome" class="field" placeholder="Nome completo" required/>
+						<input type="email" name="email" class="field" placeholder="E-mail" required/>
 						<textarea type="text" name="mensagem" class="field" placeholder="Mensagem"></textarea>
-
-
 					</div>
 
 					<div class="form-part2 small-12 large-3 xlarge-3 end columns no-padding">
-						<input type="text" name="telefone" class="field" placeholder="Telefone" />
-
-						<input type="datetime-local" name="data" class="field" placeholder="Data e hora" />
-
-						<input type="text" name="data" class="field" placeholder="Número de pessoas" />
-
+						<input type="text" name="telefone" class="field" placeholder="Telefone" required/>
+						<input type="datetime-local" name="data" class="field" placeholder="Data e hora" required/>
+						<input type="text" name="num_pessoas" class="field" placeholder="Número de pessoas" required/>
 						<input type="submit" name="submit" value="Reservar" />
-
 					</div>
 
-
 				</form>
+
+				<?php
+
+					// Inserir Arquivos do PHPMailer
+					require 'phpmailer/Exception.php';
+					require 'phpmailer/PHPMailer.php';
+					require 'phpmailer/SMTP.php';
+
+					// Usar as classes sem o namespace
+					use PHPMailer\PHPMailer\PHPMailer;
+					use PHPMailer\PHPMailer\Exception;
+				
+					// Limpa os valores das variáveis
+					function clean_input($input) {
+						$input = trim($input);
+						$input = stripslashes($input);
+						$input = htmlspecialchars($input);
+
+						return $input;
+					}
+
+					// Faz a validação se o botão de enviar foi clicado.
+					// Quando o botão é clicado, o REQUEST_METHOD muda de "GET" para "POST"
+					if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+						$name = $_POST['nome'];
+						$email = $_POST['email'];
+						$message = $_POST['mensagem'];
+						$phone = $_POST['telefone'];
+						$date = $_POST['data'];
+						$people_number = $_POST['num_pessoas'];
+
+						$name = clean_input($name);
+						$email = clean_input($email);
+						$message = clean_input($message);
+						$phone = clean_input($phone);
+						$date = clean_input($date);
+						$people_number = clean_input($people_number);
+
+						$email_message = 'E-mail enviado do sistema de reservas - Restô Bar' . '<br><br>' . 
+										 'Nome: ' . $name . '<br>' . 
+										 'E-mail: ' . $email . '<br>' .
+										 'Telefone: ' . $phone . '<br>' .
+										 'Data e hora da reserva: ' . $date . '<br>' . 
+										 'Número de pessoas: ' . $people_number . '<br>' .
+										 'Mensagem: ' . $message . '<br>';
+
+						// Criação do Objeto da Classe PHPMailer
+						$mail = new PHPMailer(true); 
+						$mail->CharSet="UTF-8";
+
+						try {
+							
+							//Retire o comentário abaixo para soltar detalhes do envio 
+							// $mail->SMTPDebug = 2;                                
+							
+							// Usar SMTP para o envio
+							$mail->isSMTP();                                      
+
+							// Detalhes do servidor (No nosso exemplo é o Google)
+							$mail->Host = 'smtp.gmail.com';
+
+							// Permitir autenticação SMTP
+							$mail->SMTPAuth = true;                               
+
+							// Nome do usuário
+							$mail->Username = 'matteroftest01@gmail.com';        
+							// Senha do E-mail         
+							$mail->Password = '94408914poynter';                           
+							// Tipo de protocolo de segurança
+							$mail->SMTPSecure = 'tls';   
+
+							// Porta de conexão com o servidor                        
+							$mail->Port = 587;
+
+							
+							// Garantir a autenticação com o Google
+							$mail->SMTPOptions = array(
+								'ssl' => array(
+									'verify_peer' => false,
+									'verify_peer_name' => false,
+									'allow_self_signed' => true
+								)
+							);
+
+							// Remetente
+							$mail->setFrom($email, $name);
+							
+							// Destinatário
+							$mail->addAddress('matteroftest01@gmail.com', 'Just Testing');
+
+							// Conteúdo
+
+							// Define conteúdo como HTML
+							$mail->isHTML(true);                                  
+
+							// Assunto
+							$mail->Subject = 'Novo pedido de reserva - Restô Bar';
+							$mail->Body    = $email_message;
+							$mail->AltBody = $email_message;
+
+							// Enviar E-mail
+							$mail->send();
+							$returnMessage = 'Mensagem enviada com sucesso';
+						} catch (Exception $e) {
+							$returnMessage =  'A mensagem não foi enviada.';
+						}
+
+					}
+				?>
 			</div>
+			
+			<?php if ($_SERVER['REQUEST_METHOD'] == 'POST') { ?>
+				<p><?php echo $returnMessage; ?></p>
+			<?php } ?>
 
 		</div>
 	</div>
