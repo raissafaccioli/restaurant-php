@@ -36,8 +36,6 @@
 						$mealCalories = $row['calorias'];
 					}
 
-				} else {
-					echo 'Não há informações do prato.';
 				}
 			}
 				
